@@ -3,6 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const apiRootes=require('./routes/apiRoutes.js')
 
 const {errorHandler}=require('./middleware/errorHandler');
 
@@ -14,6 +15,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); 
 
 // Routes
+
+app.use('/api',apiRootes)
 
 app.get('/',(req,res,next)=>{
     try {
