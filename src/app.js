@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Error handling middleware
 app.get('/',(req,res,next)=>{
     try {
-        res.send('hello eveyone to my app ')
+        res.send('hello ayoub megdoud  ')
     } catch (error) {
         next(error)
     }
