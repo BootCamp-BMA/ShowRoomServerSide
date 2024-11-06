@@ -16,7 +16,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 
 // Error handling middleware
-
 app.get('/',(req,res,next)=>{
     try {
         res.send('hello eveyone to my app ')
@@ -24,6 +23,16 @@ app.get('/',(req,res,next)=>{
         next(error)
     }
 });
+app.all('*',(req,res,next)=>{
+    try {
+        res.status(404).json({success:false,message:'page not found'})
+        
+    } catch (error) {
+        next(error)
+        
+    }
+});
+
 
 
 module.exports = app;
