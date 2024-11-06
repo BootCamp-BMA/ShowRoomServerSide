@@ -15,7 +15,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
 
-// Error handling middleware
 app.get('/',(req,res,next)=>{
     try {
         res.send('hello ayoub megdoud  postman ya5dem kima l axios tester tconnecter les route ta3 server kima hadi ay route ')
@@ -33,6 +32,7 @@ app.all('*',(req,res,next)=>{
     }
 });
 
+// Error handling middleware
 app.use(errorHandler);
 
 module.exports = app;
