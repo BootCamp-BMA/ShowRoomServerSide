@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Error handling middleware
 app.get('/',(req,res,next)=>{
     try {
-        res.send('hello ayoub megdoud  ')
+        res.send('hello ayoub megdoud  postman ya5dem kima l axios tester tconnecter les route ta3 server kima hadi ay route ')
     } catch (error) {
         next(error)
     }
