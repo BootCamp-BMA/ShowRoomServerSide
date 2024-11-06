@@ -4,7 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-// const errorHandler = require('./middleware/errorHandler');
+const {errorHandler}=require('./middleware/errorHandler');
 
 const app = express();
 
@@ -32,6 +32,8 @@ app.all('*',(req,res,next)=>{
         
     }
 });
+
+app.use(errorHandler);
 
 
 
