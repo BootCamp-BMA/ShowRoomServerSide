@@ -1,0 +1,29 @@
+// src/app.js
+
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+
+// const errorHandler = require('./middleware/errorHandler');
+
+const app = express();
+
+// Middleware
+app.use(cors()); 
+app.use(bodyParser.json()); 
+app.use(bodyParser.urlencoded({ extended: true })); 
+
+// Routes
+
+// Error handling middleware
+
+app.get('/',(req,res,next)=>{
+    try {
+        res.send('hello eveyone to my app ')
+    } catch (error) {
+        next(error)
+    }
+});
+
+
+module.exports = app;

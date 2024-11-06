@@ -1,0 +1,36 @@
+{
+  "name": "setif-car-showroom",
+  "version": "1.0.0",
+  "description": "A car showroom management system for Setif, handling vehicle displays, user authentication, and showroom operations.",
+  "main": "src/config/server.js",
+  "scripts": {
+    "start": "node src/config/server.js",    
+    "dev": "nodemon src/config/server.js",   
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Setif",
+    "car showroom",
+    "car dealership",
+    "vehicle management",
+    "auto showroom",
+    "car sales"
+  ],
+  "author": "BootCamp-BMA",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  },
+  "engines": {
+    "node": ">=14.x"
+  }
+}
