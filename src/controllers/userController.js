@@ -3,19 +3,25 @@ const User=require('../models/userModel.js')
 
 
 
-module.exports.updateProfile =async (req,res,next)=>{
-    try{
-        const updates=req.body;
-        const user = await User.findByIdAndUpdate(req.user.id,updates,{new:true}).select('-password');
-        if(!user)
-            return res.status(404).json({message: 'user not found '})
-        res.status(200).json(user);
-    }
+module.exports.updateProfile = async (req, res, next) => {
+    try {
+        const updates = req.body;
 
-    catch(error){
-        next(error)
+        
+        if (updates.photo && typeof updates.photo === 'string') {
+            
+            updates.photo = updates.photo; 
+        }
+
+        const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true }).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        res.status(200).json(user);
+    } catch (error) {
+        next(error);
     }
-}
+};
+
 
 module.exports.getUsersWhere=async(req,res,next)=>{
     try {

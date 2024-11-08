@@ -1,0 +1,292 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ShowRoomServer API Documentation",
+    "description": "",
+  
+    "version": "1.0.0",
+    "contact": {
+      "group":"IDTW 2",
+      "name": "",
+      "email": "",
+      "url": ""
+    }
+  },
+  "host": "https://show-room-server-979c93442bc5.herokuapp.com/",
+
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/api/users/getUsersWhere": {
+      "get": {
+        "summary": "Get Users with Conditions",
+        "description": "Retrieve a list of users based on specified conditions such as sorting, limiting, and filtering criteria.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "Bearer token for authentication"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/GetUsersWhereRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users based on the query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized access - Invalid token"
+          },
+          "403": {
+            "description": "Permission denied"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/users/updateUser": {
+      "put": {
+        "summary": "Update User Profile",
+        "description": "Updates the profile of an authenticated user.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "Bearer token for authentication"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateUserRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile updated successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "404": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/users/delete": {
+      "delete": {
+        "summary": "Delete User(s)",
+        "description": "Deletes a user or multiple users based on the provided ID(s).",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "type": "string",
+            "description": "Bearer token for authentication"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeleteUsersRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User(s) deleted successfully"
+          },
+          "404": {
+            "description": "No user(s) found with the provided ID(s)"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "summary": "User Registration",
+        "description": "Registers a new user with the provided details.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "schema": {
+              "$ref": "#/definitions/RegisterResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid input or email already exists"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "User Login",
+        "description": "Authenticates a user and returns a token upon successful login.",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "$ref": "#/definitions/LoginResponse"
+            }
+          },
+          "401": {
+            "description": "Invalid email or password"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "GetUsersWhereRequest": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "type": "object",
+          "description": "Search conditions for filtering users"
+        },
+        "sort": {
+          "type": "object",
+          "description": "Sorting criteria"
+        },
+        "select": {
+          "type": "string",
+          "description": "Fields to include in the result"
+        },
+        "limit": {
+          "type": "integer",
+          "description": "Maximum number of results to return"
+        },
+        "skip": {
+          "type": "integer",
+          "description": "Number of results to skip"
+        }
+      }
+    },
+    "UpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string", "description": "Updated first name" },
+        "lastName": { "type": "string", "description": "Updated last name" },
+        "phoneNum": { "type": "string", "description": "Updated phone number" },
+        "photo": { "type": "string", "description": "Base64 encoded profile picture", "optional": true }
+      }
+    },
+    "DeleteUsersRequest": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID of the user to delete" },
+        "ids": { "type": "array", "items": { "type": "string" }, "description": "List of user IDs to delete" }
+      }
+    },
+    "RegisterRequest": {
+      "type": "object",
+      "required": ["firstName", "lastName", "email", "password", "phoneNum"],
+      "properties": {
+        "firstName": { "type": "string", "description": "User's first name" },
+        "lastName": { "type": "string", "description": "User's last name" },
+        "phoneNum": { "type": "string", "description": "Primary phone number" },
+        "email": { "type": "string", "description": "User's email address" },
+        "password": { "type": "string", "description": "User's password" }
+      }
+    },
+    "RegisterResponse": {
+      "type": "object",
+      "properties": {
+        "token": { "type": "string", "description": "JWT token" },
+        "user": {
+          "$ref": "#/definitions/User"
+        }
+      }
+    },
+    "LoginRequest": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": { "type": "string", "description": "User's email address" },
+        "password": { "type": "string", "description": "User's password" }
+      }
+    },
+    "LoginResponse": {
+      "type": "object",
+      "properties": {
+        "token": { "type": "string", "description": "JWT token" },
+        "user": {
+          "$ref": "#/definitions/User"
+        }
+      }
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the user" },
+        "firstName": { "type": "string", "description": "User's first name" },
+        "lastName": { "type": "string", "description": "User's last name" },
+        "email": { "type": "string", "description": "User's email address" },
+        "phoneNum": { "type": "string", "description": "Primary phone number" },
+        "phoneNum2": { "type": "string", "description": "Optional secondary phone number" },
+        "role": { "type": "string", "description": "Role of the user (guest, user, admin)" },
+        "photo": { "type": "string", "description": "Base64 encoded profile picture (optional)" }
+      }
+    }
+  }
+}
