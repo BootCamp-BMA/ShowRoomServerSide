@@ -1,0 +1,15 @@
+doctype html
+html(lang="en")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Document
+    body 
+        form(action='#' method='method')
+            .form-group
+                label(for='email') Email
+                input.form-control(type='email', name='email' placeholder='Email' autofocus=true)
+            .form-group
+                label(for='password') Password
+                input.form-control(type='password', name='{:password}')
+            button.btn.btn-primary(type='submit') Log-in

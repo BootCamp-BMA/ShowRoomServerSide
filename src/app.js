@@ -4,10 +4,15 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const apiRootes=require('./routes/apiRoutes.js')
+const path=require('path')
+
 
 const {errorHandler}=require('./middleware/errorHandler');
 
 const app = express();
+
+app.set('view engine','pug')
+app.set('views',path.join(__dirname,'./views'))
 
 
 app.use(cors()); 
