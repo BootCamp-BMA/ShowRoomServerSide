@@ -1,16 +1,15 @@
 {
   "swagger": "2.0",
-  "info": {
-    "title": "ShowRoomServer API Documentation",
-    "description": "",
-  
-    "version": "1.0.0",
+"info": {
+    "title": "show room api documention",
+    "description": "this is documetnion about what this server can do and how to do handle information of this show room ",
+
     "contact": {
-      "group":"IDTW 2",
-      "name": "",
-      "email": "",
-      "url": ""
-    }
+      "name": "IDTW 2 group 1 ",
+      "email": "mbouchareb@gmail.com",
+      "url": "https://github.com/BootCamp-BMA/ShowRoomServerSide"
+    },
+    "version": "1.0.0"
   },
   "host": "https://show-room-server-979c93442bc5.herokuapp.com/",
 
