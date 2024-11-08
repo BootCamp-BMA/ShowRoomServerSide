@@ -1,11 +1,13 @@
 require('dotenv').config()
 
 const app = require('../app.js');
-// const mongoose = require('mongoose'); 
-// const config = require('./config'); 
+
+const {connectMongo} = require('./db.js'); 
+
+
 
 // Connect to the database 
-
+connectMongo()
 
 // Start the server
 const PORT =process.env.PORT;
