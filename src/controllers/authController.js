@@ -13,7 +13,7 @@ module.exports.register=async(req,res,next)=>{
         await user.save();
 
         const token = generateToken(user) 
-        res.status(201).json({token,user:{id:user._id,email:user.email,role:user.role}});
+        res.status(201).json({token,user});
 
         
     } catch (error) {
