@@ -30,7 +30,7 @@ module.exports.login = async (req,res,next)=>{
             return res.status(401).json({message: 'invalid email or password'})
         
         const token = generateToken(user);
-        res.json({token,user:{id:user._id,email:user.email,role:user.role}})
+        res.json({token,user})
         
     } catch (error) {
         next(error)
