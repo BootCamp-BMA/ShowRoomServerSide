@@ -39,7 +39,7 @@ const generateToken = (user)=>{
     },
     secretKey,
     {
-        expiresIn:'1h'
+        expiresIn:'24h'
     }
 )
 }
