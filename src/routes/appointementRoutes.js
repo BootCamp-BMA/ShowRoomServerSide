@@ -14,4 +14,4 @@ router.delete('/delete',auth(['admin']),deleteAppointment)
 
 
 
-module.exports
+module.exports=router
