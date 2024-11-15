@@ -1,11 +1,13 @@
 const express = require('express')
 const router = express.Router()
-const userRootes=require('./userRoutes')
-const authRootes=require('./authRoutes')
+const userRoutes=require('./userRoutes')
+const authRoutes=require('./authRoutes')
+const carRoutes=require('./carRoutes')
 
 
-router.use('/users',userRootes)
-router.use('/auth',authRootes)
+router.use('/users',userRoutes)
+router.use('/auth',authRoutes)
+router.use('/cars',carRoutes)
 
 
 
