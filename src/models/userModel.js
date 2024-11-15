@@ -58,8 +58,20 @@ UserSchema.pre('save', async function(next) {
     next();
 });
 
+UserSchema.pre('remove', async function(next) {
+    try {
+
+      await Appointment.deleteMany({ userId: this._id });
+      next();
+    } catch (err) {
+      next(err);
+    }
+  });
+
+
 UserSchema.methods.comparePassword = async function(inputPassword) {
     return await bcrypt.compare(inputPassword, this.password);
 };
+
 
 module.exports = mongoose.model('User', UserSchema);

@@ -93,6 +93,16 @@ const carSchema = new mongoose.Schema(
   { timestamps: true } 
 );
 
+carSchema.pre('remove', async function(next) {
+    try {
+
+      await Appointment.deleteMany({ carId: this._id });
+      next();
+    } catch (err) {
+      next(err);
+    }
+  });
+
 const Car = mongoose.model('Car', carSchema);
 
 module.exports = Car;
