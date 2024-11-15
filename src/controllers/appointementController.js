@@ -77,7 +77,7 @@ module.exports.updateAppointment = async (req, res, next) => {
 };
 
 
-module.exports.getAppointments = async (req, res, next) => {
+module.exports.getAppointementWhere = async (req, res, next) => {
   try {
     const { condition = {}, sort = {}, select = '', limit = 10, skip = 0 } = req.body;
 

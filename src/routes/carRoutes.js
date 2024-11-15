@@ -5,7 +5,7 @@ const {auth} = require('../middleware/auth.js')
 
 
 
-router.get('/getById',getCarById);
+router.get('/getById/:id',getCarById);
 router.get('/getWhere',getWhere);
 router.post('/create',auth(['admin']),createCar)
 router.put('/update/:id',auth(['admin']),updateCar)
