@@ -1,0 +1,42 @@
+// docs/swaggerConfig.js
+const swaggerJsDoc = require('swagger-jsdoc');
+const path = require('path');
+
+
+// Define the basic project info
+const options = {
+  definition: {
+    openapi: '3.0.0', 
+    info: {
+      title: 'Show Room API Documentation',
+      description: 'This is the documentation about what this server can do and how to handle information of this showroom.',
+      contact: {
+        name: 'IDTW 2 Group 1',
+        email: 'mbouchareb@gmail.com',
+        url: 'https://github.com/BootCamp-BMA/ShowRoomServerSide',
+      },
+      version: '1.0.0',
+    },
+    servers: [
+      {
+        url: 'https://show-room-server-979c93442bc5.herokuapp.com/', 
+      },
+
+    ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+  },
+  apis: [path.join(__dirname, '../src/routes/**/*.js')], 
+};
+
+
+const swaggerSpec = swaggerJsDoc(options);
+
+module.exports = swaggerSpec;

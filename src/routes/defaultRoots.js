@@ -3,7 +3,7 @@ const router = express.Router();
 const apiRootes=require('./apiRoutes.js')
 
 const swaggerUi=require('swagger-ui-express')
-const swaggerDoc=require('../doc/swagger.json')
+const swaggerSpec = require('../doc/swaggerConfig.js');  
 const {errorHandler}=require('../middleware/errorHandler.js');
 
 
@@ -19,7 +19,7 @@ router.get('/',(req,res,next)=>{
 
 
 router.use('/api',apiRootes)
-router.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerDoc));
+router.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec));
 
 
 router.all('*',(req,res,next)=>{
