@@ -13,20 +13,34 @@ const appointmentSchema = new mongoose.Schema({
   },
   appointmentDateTime: {
     type: Date,
-    required: true
+    required: true,
+    validate: {
+      validator: function(value) {
+        
+        return value >= Date.now();
+      },
+      message: 'Appointment date and time must be in the future.'
+    }
   },
   duration: {
     type: Number, 
-    required: true
+    required: true,
+    min: [1, 'Duration must be at least 1 hour.'] 
   },
   price: {
     type: Number,
-    required: true
+    required: true,
+    min: [0, 'Price must be a positive number.']
   },
   status: {
     type: String,
     enum: ['pending', 'confirmed', 'canceled', 'completed'],
     default: 'pending'
+  },
+  notes: {
+    type: String,
+    maxlength: 500, 
+    trim: true
   }
 }, {
   timestamps: true 
