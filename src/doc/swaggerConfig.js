@@ -2,7 +2,8 @@
 const swaggerJsDoc = require('swagger-jsdoc');
 const path = require('path');
 const UserSchema = require('./schemas/userSchema'); 
-const CarSchema = require('./schemas/carSchema')
+const CarSchema = require('./schemas/carSchema');
+const AppointmentSchema=require('./schemas/appointementSchema.js')
 
 
 
@@ -39,7 +40,8 @@ const options = {
       schemas:{
         User:UserSchema,
         Car:CarSchema,
-        
+        Appointment:AppointmentSchema
+
       }
     },
   },
