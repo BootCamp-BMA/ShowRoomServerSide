@@ -1,6 +1,8 @@
 // docs/swaggerConfig.js
 const swaggerJsDoc = require('swagger-jsdoc');
 const path = require('path');
+const UserSchema = require('./schemas/userSchema'); 
+const { schema } = require('../models/carModel');
 
 
 // Define the basic project info
@@ -31,9 +33,13 @@ const options = {
           bearerFormat: 'JWT',
         },
       },
+      schemas:{
+        User:UserSchema
+      }
     },
   },
-  apis: [path.join(__dirname, '../src/routes/**/*.js')], 
+  apis: [path.join(__dirname, '../routes/**/*.js')], 
+
 };
 
 
