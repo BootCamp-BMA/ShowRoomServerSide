@@ -1,27 +1,39 @@
+//  Controllers handle the logic for processing requests and sending back responses
+
+// These lines import the models (Appointment, User, Car) that represent the data structures in your database.
+// Each model interacts with its respective MongoDB collection.
 const Appointment = require('../models/AppointementModel');
 const User = require('../models/userModel');
 const Car = require('../models/carModel');
 
-
+// create Appointment 
+// Handles the creation of a new appointment.
 module.exports.createAppointment = async (req, res, next) => {
   try {
+    // Reads appointment details from req.body.
     const appointmentData = req.body;
 
-
+    // Creates a new appointment document using the appointment data.
+    // Validate user and car IDs:
     const userExists = await User.findById(appointmentData.userId);
+
+    // Checks if the user (userId) exists. If not, responds with a 404 (Not Found).
     if (!userExists) {
       return res.status(404).json({ message: 'User not found' });
     }
-
+    // Checks if the car (carId) exists. If not, responds with a 404 (Not Found).
     const carExists = await Car.findById(appointmentData.carId);
     if (!carExists) {
       return res.status(404).json({ message: 'Car not found' });
     }
-
+    // Creates a new appointment using the data and saves it to the database.
     const newAppointment = new Appointment(appointmentData);
     const savedAppointment = await newAppointment.save();
 
+    // Sends back the saved appointment with a 201 status (Created).
     res.status(201).json(savedAppointment);
+
+    // If anything goes wrong, it passes the error to the next() middleware.
   } catch (error) {
     next(error);
   }
