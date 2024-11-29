@@ -1,44 +1,47 @@
-//uploadImages
-// src/middleware/upload.js
-
 const multer = require('multer');
-const path = require('path');
 
-// Get the max image size from .env and convert it to bytes (MB -> bytes)
-const IMAGE_MAX_SIZE_MB = parseInt(process.env.IMAGE_MAX_SIZE_MB, 10) * 1024 * 1024; // 7 MB
+// Middleware to validate image file uploads
+const uploadImageFiles = (req, res, next) => {
+  // Set the maximum file size for image files from the environment variable
+  const maxImageSize = parseInt(process.env.IMAGE_MAX_SIZE_MB) * 1024 * 1024 || 5 * 1024 * 1024; // Default to 5MB if not defined
 
-// Define allowed file extensions
-const ALLOWED_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.gif', '.tiff', '.bmp'];
+  // Initialize multer with memory storage (stores the file in memory)
+  const storage = multer.memoryStorage();
 
-// Create storage configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
+  // File filter function to allow only image files (JPEG, PNG, GIF, BMP)
+  const fileFilter = (req, file, cb) => {
+    // Check file extension
+    const allowedTypes = /jpg|jpeg|png|gif|bmp/;
+    const isValid = allowedTypes.test(file.mimetype) || allowedTypes.test(file.originalname);
+    
+    if (!isValid) {
+      return cb(new Error('Only image files (jpg, jpeg, png, gif, bmp) are allowed'), false);
+    }
+    cb(null, true);
+  };
 
-    cb(null, 'uploads/');  
-  },
-  filename: function (req, file, cb) {
-    const extname = path.extname(file.originalname).toLowerCase();
-    const filename = `${Date.now()}_${file.fieldname}${extname}`;  
-  }
-});
+  // Set up multer with the storage, file filter, and file size limit
+  const upload = multer({
+    storage: storage,
+    limits: {
+      fileSize: maxImageSize, // Limit the file size
+    },
+    fileFilter: fileFilter,
+  }).array('images', 5); // Expecting multiple files (field name 'images'), max 5 files per request
 
-
-const fileFilter = (req, file, cb) => {
-  const extname = path.extname(file.originalname).toLowerCase();
-  if (ALLOWED_EXTENSIONS.includes(extname)) {
-    return cb(null, true);  
-  } else {
-    return cb(new Error('Invalid file type'), false);  
-  }
+  // Run the multer upload middleware
+  upload(req, res, (err) => {
+    if (err) {
+      // Handle errors (either size or type issues)
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: `File size exceeds the limit of ${maxImageSize / (1024 * 1024)}MB` });
+      }
+      return res.status(400).json({ message: err.message });
+    }
+    
+    // If no errors, proceed to the next middleware
+    next();
+  });
 };
 
-
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: IMAGE_MAX_SIZE_MB  // Limit the file size to the value from .env
-  },
-  fileFilter
-});
-
-module.exports = upload;
+module.exports = uploadImageFiles;
