@@ -5,12 +5,14 @@ const userRoutes=require('./userRoutes')
 const authRoutes=require('./authRoutes')
 const carRoutes=require('./carRoutes')
 const appointementRoutes=require('./appointementRoutes')
+const fileRoot=reqruire('./fileRoot.js')
 
 
 router.use('/users',userRoutes)
 router.use('/auth',authRoutes)
 router.use('/cars',carRoutes)
 router.use('/appointement',appointementRoutes)
+router.use('/file',fileRoot)
 
 
 
