@@ -40,50 +40,48 @@ const {auth} = require('../middleware/auth.js')
  *         description: Internal Server Error
  */
 router.get('/getById/:id',getCarById);
+
 /**
  * @swagger
  * /api/cars/getWhere:
- *   get:
- *     summary: Get cars based on specified conditions
- *     description: Retrieve a list of cars based on filtering criteria, sorting options, and pagination.
+ *   post:
+ *     summary: Get cars based on dynamic search parameters
+ *     description: Retrieve a list of cars based on search filters, sorting, field selection, and pagination. Only accessible by authenticated users with 'admin' or 'user' roles.
  *     tags:
  *       - Car
- *     parameters:
- *       - name: condition
- *         in: query
- *         description: Filtering criteria (e.g., car make, year, etc.)
- *         required: false
- *         schema:
- *           type: object
- *       - name: sort
- *         in: query
- *         description: Sorting order for the results (e.g., price, year).
- *         required: false
- *         schema:
- *           type: object
- *       - name: select
- *         in: query
- *         description: Fields to be returned (e.g., 'make model year').
- *         required: false
- *         schema:
- *           type: string
- *       - name: limit
- *         in: query
- *         description: Number of cars to return
- *         required: false
- *         schema:
- *           type: integer
- *           default: 10
- *       - name: skip
- *         in: query
- *         description: Number of cars to skip (pagination)
- *         required: false
- *         schema:
- *           type: integer
- *           default: 0
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               condition:
+ *                 type: object
+ *                 description: Filters to apply to the query (e.g., make, model, year).
+ *                 example:
+ *                   make: 'Tesla'
+ *                   year: { "$gte": 2020 }
+ *               sort:
+ *                 type: object
+ *                 description: Sorting rules (e.g., sort by price, year).
+ *                 example:
+ *                   pricePerDay: 1  # 1 means ascending order, -1 means descending order
+ *               select:
+ *                 type: string
+ *                 description: Fields to include in the result. Leave empty to include all fields.
+ *                 example: 'make model year pricePerDay'
+ *               limit:
+ *                 type: integer
+ *                 description: The number of cars to return.
+ *                 example: 10
+ *               skip:
+ *                 type: integer
+ *                 description: The number of cars to skip (for pagination).
+ *                 example: 0
  *     responses:
  *       200:
- *         description: List of cars
+ *         description: List of cars matching the search criteria
  *         content:
  *           application/json:
  *             schema:
@@ -91,12 +89,15 @@ router.get('/getById/:id',getCarById);
  *               items:
  *                 $ref: '#/components/schemas/Car'
  *       400:
- *         description: Invalid query parameters
+ *         description: Invalid search parameters or data
+ *       401:
+ *         description: Unauthorized - Authentication required
  *       500:
  *         description: Internal Server Error
  */
 
-router.get('/getWhere',getWhere);
+router.get('/getWhere', auth(['admin', 'user']), getWhere);
+
 /**
  * @swagger
  * /api/cars/create:
@@ -125,7 +126,7 @@ router.get('/getWhere',getWhere);
  *       500:
  *         description: Internal Server Error
  */
-router.post('/create',createCar)
+router.post('/create',auth(['admin']),createCar)
 
 /**
  * @swagger
@@ -202,7 +203,7 @@ router.put('/update/:id',auth(['admin']),updateCar)
  *         description: Internal Server Error
  */
 
-router.delete('/deleteIds',deleteCars)
+router.delete('/deleteIds',auth(['admin']),deleteCars)
 
 
 module.exports=router;
