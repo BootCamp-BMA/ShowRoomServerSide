@@ -4,6 +4,7 @@
 
 const { getGridFSBucket } = require('../config/db');
 const { Readable } = require('stream');
+const { ObjectId } = require('mongodb')
 
 module.exports.uploadFiles = async (fileStream, filename, metadata) => {
     const bucket = await getGridFSBucket();
@@ -29,14 +30,14 @@ module.exports.uploadFiles = async (fileStream, filename, metadata) => {
 
 
 module.exports.getFileById = async (fileId) => {
-    const bucket = await getGridFSBucket();
+  const bucket = await getGridFSBucket();
 
-    return new Promise((resolve, reject) => {
-        try {
-            const downloadStream = bucket.openDownloadStream(new ObjectId(fileId));
-            resolve(downloadStream);
-        } catch (err) {
-            reject(err);
-        }
-    });
+  return new Promise((resolve, reject) => {
+      try {
+          const downloadStream = bucket.openDownloadStream(new ObjectId(fileId));
+          resolve(downloadStream);
+      } catch (err) {
+          reject(err);
+      }
+  });
 };

@@ -1,5 +1,5 @@
 //mdoule.exports uploadfile by id  async 
-const {uploadFiles}=require('../config/gridFS')
+const {uploadFiles,getFileById}=require('../config/gridFS')
 
 module.exports.uploadModel=async(req,res,next)=>{
     try {
@@ -20,5 +20,34 @@ module.exports.uploadModel=async(req,res,next)=>{
       res.status(200).json({ message: 'File uploaded successfully', fileId });
   } catch (error) {
       next(error)
+  }
+}
+
+module.exports.getFileById=async(req,res,next)=>{
+  try {
+    const fileId = req.params.id;
+    console.log('Retrieving file with ID:', fileId);
+
+    const downloadStream = await getFileById(fileId);
+
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', 'attachment');
+
+    downloadStream.pipe(res);
+
+    downloadStream.on('error', (err) => {
+        console.error('Error while streaming file:', err);
+        if (err.code === 'ENOENT') {
+            return res.status(404).json({ message: 'File not found' });
+        }
+        res.status(500).json({ message: 'Error retrieving file', error: err.message });
+    });
+
+    downloadStream.on('end', () => {
+        console.log('File retrieved successfully');
+    });
+    
+  } catch (error) {
+    next(error)
   }
 }
