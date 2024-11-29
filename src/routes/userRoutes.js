@@ -15,46 +15,37 @@ const { auth } = require('../middleware/auth');
 /**
  * @swagger
  * /api/users/getUsersWhere:
- *   get:
- *     summary: Get users based on conditions
- *     description: Retrieve a list of users based on the specified condition, sorting, and pagination.
+ *   post:
+ *     summary: Get users based on conditions (POST request)
+ *     description: Retrieve a list of users based on the specified condition, sorting, and pagination. The parameters are passed in the request body.
  *     tags:
  *       - User
  *     security:
  *       - BearerAuth: []
- *     parameters:
- *       - name: condition
- *         in: query
- *         description: Condition to filter the users (e.g., active users, by role).
- *         required: false
- *         schema:
- *           type: object
- *       - name: sort
- *         in: query
- *         description: Sorting conditions for the users (e.g., by last name).
- *         required: false
- *         schema:
- *           type: object
- *       - name: select
- *         in: query
- *         description: Fields to be selected (e.g., 'firstName lastName').
- *         required: false
- *         schema:
- *           type: string
- *       - name: limit
- *         in: query
- *         description: Number of users to retrieve.
- *         required: false
- *         schema:
- *           type: integer
- *           default: 1
- *       - name: skip
- *         in: query
- *         description: Number of users to skip (pagination).
- *         required: false
- *         schema:
- *           type: integer
- *           default: 0
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               condition:
+ *                 type: object
+ *                 description: The condition to filter the users (e.g., active users, by role).
+ *               sort:
+ *                 type: object
+ *                 description: The sorting conditions for the users (e.g., by last name).
+ *               select:
+ *                 type: string
+ *                 description: Fields to be selected (e.g., 'firstName lastName').
+ *               limit:
+ *                 type: integer
+ *                 description: Number of users to retrieve.
+ *                 default: 1
+ *               skip:
+ *                 type: integer
+ *                 description: Number of users to skip (pagination).
+ *                 default: 0
  *     responses:
  *       200:
  *         description: A list of users
@@ -65,13 +56,10 @@ const { auth } = require('../middleware/auth');
  *               items:
  *                 $ref: '#/components/schemas/User'
  *       400:
- *         description: Invalid query parameters
- *       404:
- *         description: No users found
+ *         description: Invalid input data
  *       500:
  *         description: Internal Server Error
  */
-
 router.get('/getUsersWhere',auth(['admin']),userController.getUsersWhere);
 
 /**
