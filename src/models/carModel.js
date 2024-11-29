@@ -62,11 +62,11 @@ const carSchema = new mongoose.Schema(
     },
     images: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'GridFSFile',  // Assuming you're storing images in GridFS
+      ref: 'File',  // Assuming you're storing images in GridFS
     }],
     model3D: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'GridFSFile',  // Store the ID of the 3D model in GridFS
+      ref: 'File',  // Store the ID of the 3D model in GridFS
       default: null
     }
   },

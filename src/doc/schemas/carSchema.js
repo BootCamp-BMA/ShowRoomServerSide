@@ -1,107 +1,115 @@
 const CarSchema = {
-    type: 'object',
-    required: ['make', 'model', 'year', 'pricePerDay', 'transmission'],
-    properties: {
-      make: {
+  type: 'object',
+  required: ['make', 'model', 'year', 'pricePerDay', 'transmission'],
+  properties: {
+    _id: {
+      type: 'string',
+      format: 'uuid',
+      description: 'Unique identifier for the car (MongoDB ObjectId)',
+      example: '674a0e2ba6d43acf276ba40f'
+    },
+    make: {
+      type: 'string',
+      description: 'The manufacturer or brand of the car.',
+      example: 'Tesla'
+    },
+    model: {
+      type: 'string',
+      description: 'The model name of the car.',
+      example: 'Cybertruck'
+    },
+    year: {
+      type: 'integer',
+      description: 'The year the car was manufactured.',
+      example: 2022,
+      minimum: 1886
+    },
+    pricePerDay: {
+      type: 'number',
+      description: 'The price per day for renting the car.',
+      example: 100.00,
+      minimum: 0
+    },
+    color: {
+      type: 'string',
+      description: 'The color of the car.',
+      example: 'Silver'
+    },
+    mileage: {
+      type: 'integer',
+      description: 'The mileage of the car in kilometers.',
+      example: 15000,
+      minimum: 0
+    },
+    fuelType: {
+      type: 'string',
+      enum: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Other'],
+      description: 'The type of fuel the car uses.',
+      example: 'Electric'
+    },
+    transmission: {
+      type: 'string',
+      enum: ['Manual', 'Automatic', 'Semi-Automatic'],
+      description: 'The transmission type of the car.',
+      example: 'Automatic'
+    },
+    engineSize: {
+      type: 'number',
+      description: 'The engine size of the car, in liters.',
+      example: 0.0,  // Electric cars might have 0 engine size
+      minimum: 0
+    },
+    description: {
+      type: 'string',
+      description: 'A short description of the car.',
+      example: 'A futuristic electric truck with advanced autopilot features.',
+      maxLength: 500
+    },
+    isAvailable: {
+      type: 'boolean',
+      description: 'Indicates whether the car is available for rent.',
+      example: true
+    },
+    features: {
+      type: 'array',
+      items: {
         type: 'string',
-        description: "Car's make (manufacturer)",
-        example: 'Toyota'
+        example: 'Autopilot'
       },
-      model: {
+      description: 'A list of features available with the car.',
+      default: []
+    },
+    images: {
+      type: 'array',
+      items: {
         type: 'string',
-        description: "Car's model",
-        example: 'Corolla'
+        format: 'uuid',
+        description: 'ObjectId reference to the image files stored in GridFS.',
+        example: '674a0e6ca6d43acf276ba417'
       },
-      year: {
-        type: 'number',
-        description: 'Year the car was manufactured',
-        minimum: 1886,
-        example: 2020
-      },
-      pricePerDay: {
-        type: 'number',
-        description: 'Rental price per day',
-        minimum: 0,
-        example: 100
-      },
-      color: {
-        type: 'string',
-        description: 'Color of the car',
-        example: 'Red'
-      },
-      mileage: {
-        type: 'number',
-        description: 'Current mileage of the car',
-        minimum: 0,
-        example: 50000
-      },
-      fuelType: {
-        type: 'string',
-        enum: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Other'],
-        description: 'Type of fuel the car uses',
-        example: 'Petrol'
-      },
-      transmission: {
-        type: 'string',
-        enum: ['Manual', 'Automatic', 'Semi-Automatic'],
-        description: 'Transmission type of the car',
-        example: 'Automatic'
-      },
-      engineSize: {
-        type: 'number',
-        description: 'Engine size of the car (in liters)',
-        example: 2.5
-      },
-      description: {
-        type: 'string',
-        description: 'Description of the car',
-        maxLength: 500,
-        example: 'A comfortable sedan with great fuel economy.'
-      },
-      isAvailable: {
-        type: 'boolean',
-        description: 'Availability status of the car for rental',
-        example: true
-      },
-      dateAdded: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Date and time when the car was added to the system'
-      },
-      features: {
-        type: 'array',
-        items: {
-          type: 'string'
-        },
-        description: 'List of additional features of the car',
-        example: ['Air Conditioning', 'Bluetooth', 'GPS']
-      },
-      images: {
-        type: 'array',
-        items: {
-          type: 'string',
-          format: 'base64',
-          description: 'Base64-encoded images of the car'
-        },
-        description: 'Images of the car, with each image size limited to a maximum size'
-      },
-      model3D: {
-        type: 'string',
-        format: 'base64',
-        description: 'Base64-encoded 3D model of the car (if available)'
-      },
-      createdAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Date and time when the car entry was created'
-      },
-      updatedAt: {
-        type: 'string',
-        format: 'date-time',
-        description: 'Date and time when the car entry was last updated'
-      }
+      description: 'An array of image references associated with the car.',
+      default: []
+    },
+    model3D: {
+      type: 'string',
+      format: 'uuid',
+      description: 'ObjectId reference to the 3D model of the car stored in GridFS.',
+      example: '674a0e47a6d43acf276ba412',
+      default: null
+    },
+    createdAt: {
+      type: 'string',
+      format: 'date-time',
+      description: 'Timestamp when the car was created in the database.',
+      example: '2024-11-29T18:55:39.946Z'
+    },
+    updatedAt: {
+      type: 'string',
+      format: 'date-time',
+      description: 'Timestamp when the car was last updated.',
+      example: '2024-11-29T18:55:39.946Z'
     }
-  };
-  
-  module.exports = CarSchema;
-  
+  }
+};
+
+module.exports = CarSchema;

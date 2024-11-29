@@ -4,6 +4,7 @@ const path = require('path');
 const UserSchema = require('./schemas/userSchema'); 
 const CarSchema = require('./schemas/carSchema');
 const AppointmentSchema=require('./schemas/appointementSchema.js')
+const FileSchema = require('./schemas/fileSchema.js')
 
 
 
@@ -40,7 +41,8 @@ const options = {
       schemas:{
         User:UserSchema,
         Car:CarSchema,
-        Appointment:AppointmentSchema
+        Appointment:AppointmentSchema,
+        File:FileSchema
 
       }
     },
