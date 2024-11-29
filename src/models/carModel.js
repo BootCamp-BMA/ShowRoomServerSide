@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const { imageMaxSize, model3dMaxSize } = require('../config/config.js');
 
 const carSchema = new mongoose.Schema(
@@ -57,45 +56,26 @@ const carSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
-    dateAdded: {
-      type: Date,
-      default: Date.now
-    },
     features: {
       type: [String],
       default: []
     },
-    images: {
-      type: [String],
-      validate: {
-        validator: function (images) {
-          const maxSize = imageMaxSize * 1024 * 1024;
-          return images.every(image => Buffer.from(image, 'base64').length <= maxSize);
-        },
-        message: `Each image in images must be less than ${imageMaxSize}MB in size`
-      },
-      default: []
-    },
+    images: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'GridFSFile',  // Assuming you're storing images in GridFS
+    }],
     model3D: {
-      type: String,
-      validate: {
-        validator: function (model) {
-          if (!model) return true;
-
-          const maxSize = model3dMaxSize * 1024 * 1024;
-          return Buffer.from(model, 'base64').length <= maxSize;
-        },
-        message: `The 3D model must be less than ${model3dMaxSize} in size`
-      },
-      default: ''
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'GridFSFile',  // Store the ID of the 3D model in GridFS
+      default: null
     }
   },
-  { timestamps: true } 
+  { timestamps: true }
 );
 
 carSchema.pre('remove', async function(next) {
     try {
-
+      // Clean up associated appointments when a car is removed
       await Appointment.deleteMany({ carId: this._id });
       next();
     } catch (err) {
