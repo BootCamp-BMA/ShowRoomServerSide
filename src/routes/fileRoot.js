@@ -5,7 +5,7 @@ const modelUpload=require('../middleware/uploadModel')
 
 router.get('/getFileById/:id')
 router.delete('/deleteFileById/:id')
-router.post('/uploadModel',uploadModel.single('model3d'))
+router.post('/uploadModel',modelUpload.single('model3d'))
 router.post('/uploadImages',imageUpload.array('images', 5))
 
 module.exports=router
