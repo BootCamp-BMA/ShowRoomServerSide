@@ -1,5 +1,5 @@
 //mdoule.exports uploadfile by id  async 
-require('../config/gridFS')
+const {uploadFiles}=require('../config/gridFS')
 
 module.exports.uploadModel=async(req,res,next)=>{
     try {

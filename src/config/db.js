@@ -1,33 +1,50 @@
-                                                                                                                    // src/config/db.js
-//config/db.js
 require('dotenv').config();
 const mongoose = require('mongoose');
-const { MongoClient } = require('mongodb');
+const { MongoClient, GridFSBucket } = require('mongodb');
 
-const mongoURI = process.env.MONGO_URI; 
+// Load environment variables
+const mongoURI = process.env.MONGO_URI;
+const dbName = process.env.DB_NAME;
 
+let dbInstance;
+let gridFSBucket;
+
+// MongoDB client instance
+const client = new MongoClient(mongoURI);
 
 const connectMongo = async () => {
+  if (!dbInstance) {
     try {
-        // Connect using Mongoose
-        await mongoose.connect(mongoURI);
-        console.log("Connected to MongoDB with Mongoose");
+      console.log('... waiting to connect to MongoDB');
 
+      // Connect to MongoDB using MongoClient
+      await client.connect();
+      dbInstance = client.db(dbName);
+      console.log('Connected to MongoDB successfully');
 
-        const client = new MongoClient(mongoURI);
-        await client.connect();
-        console.log("Connected to MongoDB client for GridFS");
+      // Set up GridFSBucket
+      gridFSBucket = new GridFSBucket(dbInstance, { bucketName: 'uploads' });
 
-        return client;
+      // Connect to MongoDB using Mongoose
+      await mongoose.connect(mongoURI, { dbName });
+      console.log('Connected to MongoDB with Mongoose');
     } catch (error) {
-        console.error("Error connecting to MongoDB:", error);
-        process.exit(1); 
+      console.error('Error connecting to MongoDB:', error);
+      throw error;
     }
-}
-
-module.exports = {
-    connectMongo,
+  }
+  return dbInstance;
 };
 
+// Function to get GridFSBucket
+const getGridFSBucket = async () => {
+  if (!gridFSBucket) {
+    await connectMongo();
+  }
+  return gridFSBucket;
+};
 
-
+module.exports = {
+  connectMongo,
+  getGridFSBucket,
+};
