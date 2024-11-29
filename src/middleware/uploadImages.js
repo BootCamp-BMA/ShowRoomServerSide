@@ -27,7 +27,7 @@ const uploadImageFiles = (req, res, next) => {
       fileSize: maxImageSize, // Limit the file size
     },
     fileFilter: fileFilter,
-  }).array('images', 5); // Expecting multiple files (field name 'images'), max 5 files per request
+  }).array('image', 5); // Expecting multiple files (field name 'images'), max 5 files per request
 
   // Run the multer upload middleware
   upload(req, res, (err) => {

@@ -74,14 +74,28 @@ const carSchema = new mongoose.Schema(
 );
 
 carSchema.pre('remove', async function(next) {
-    try {
-      // Clean up associated appointments when a car is removed
-      await Appointment.deleteMany({ carId: this._id });
-      next();
-    } catch (err) {
-      next(err);
+  try {
+    // If the car has a model3D, delete the associated file
+    if (this.model3D) {
+      await removeFileById(this.model3D);
+      console.log(`Deleted model3D file with ID: ${this.model3D}`);
     }
-  });
+
+    // If the car has images, delete all the associated image files
+    if (this.images && this.images.length > 0) {
+      for (let imageId of this.images) {
+        await removeFileById(imageId);
+        console.log(`Deleted image file with ID: ${imageId}`);
+      }
+    }
+
+    // Clean up associated appointments when a car is removed
+    await Appointment.deleteMany({ carId: this._id });
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 const Car = mongoose.model('Car', carSchema);
 
