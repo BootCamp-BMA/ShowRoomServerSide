@@ -125,7 +125,7 @@ router.get('/getWhere',getWhere);
  *       500:
  *         description: Internal Server Error
  */
-router.post('/create',auth(['admin']),createCar)
+router.post('/create',createCar)
 
 /**
  * @swagger
@@ -202,7 +202,7 @@ router.put('/update/:id',auth(['admin']),updateCar)
  *         description: Internal Server Error
  */
 
-router.delete('/deleteIds',auth(['admin']),deleteCars)
+router.delete('/deleteIds',deleteCars)
 
 
 module.exports=router;

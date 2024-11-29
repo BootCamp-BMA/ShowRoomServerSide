@@ -41,3 +41,39 @@ module.exports.getFileById = async (fileId) => {
       }
   });
 };
+
+const mongoose = require('mongoose');
+const { GridFSBucket } = require('mongodb');
+
+// Assuming you have a default MongoDB connection set up using Mongoose
+const db = mongoose.connection;
+
+module.exports.deleteFileById=async (fileId) =>{
+  try {
+    // Check if the MongoDB connection is available
+    if (!db || !db.collection) {
+      throw new Error('Database connection not established');
+    }
+
+    // Initialize GridFSBucket with the correct database
+    const bucket = new GridFSBucket(db, { bucketName: 'uploads' });
+
+    // Perform the file deletion
+    bucket.delete(new mongoose.Types.ObjectId(fileId), (err) => {
+      if (err) {
+        console.error(`Error deleting file with ID ${fileId}:`, err);
+        throw new Error(`Error deleting file with ID ${fileId}`);
+      }
+      console.log(`File with ID ${fileId} deleted successfully`);
+    });
+  } catch (error) {
+    console.error('Error in deleteFileById:', error.message);
+    throw error;
+  }
+}
+
+
+
+
+
+

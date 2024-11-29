@@ -1,20 +1,28 @@
-//fileModel
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
 
-// GridFS stores files in two collections: 'files' and 'chunks'.
-// The schema will only need to store metadata and references to GridFS.
-
-const fileSchema = new Schema(
+const fileSchema = new mongoose.Schema(
   {
-    filename: { type: String, required: true },
-    fileId: { type: Schema.Types.ObjectId, required: true, unique: true },
-    fileSize: { type: Number, required: true },
-    contentType: { type: String, required: true },
-    carId: { type: Schema.Types.ObjectId, ref: 'Car' }, // Link the file to a specific car
-    createdAt: { type: Date, default: Date.now }
+    filename: {
+      type: String,
+      required: true
+    },
+    contentType: {
+      type: String,
+      required: true
+    },
+    length: {
+      type: Number,
+      required: true
+    },
+    uploadDate: {
+      type: Date,
+      default: Date.now
+    },
+    metadata: {
+      type: mongoose.Schema.Types.Mixed, // Store any metadata related to the file (like car ID, etc.)
+    },
   },
-  { timestamps: true }
+  { collection: 'uploads.files' } // Link to the 'uploads.files' collection
 );
 
 const File = mongoose.model('File', fileSchema);

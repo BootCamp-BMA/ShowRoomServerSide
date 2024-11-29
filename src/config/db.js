@@ -47,4 +47,5 @@ const getGridFSBucket = async () => {
 module.exports = {
   connectMongo,
   getGridFSBucket,
+  MongoClient
 };
