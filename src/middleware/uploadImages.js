@@ -13,27 +13,26 @@ const ALLOWED_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.gif', '.tiff', '.bmp'];
 // Create storage configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // You can change this to your desired folder
-    cb(null, 'uploads/');  // Save the uploaded files to the "uploads" directory
+
+    cb(null, 'uploads/');  
   },
   filename: function (req, file, cb) {
     const extname = path.extname(file.originalname).toLowerCase();
-    const filename = `${Date.now()}_${file.fieldname}${extname}`;  // Create a unique filename
-    cb(null, filename);
+    const filename = `${Date.now()}_${file.fieldname}${extname}`;  
   }
 });
 
-// File filter to accept only specific extensions
+
 const fileFilter = (req, file, cb) => {
   const extname = path.extname(file.originalname).toLowerCase();
   if (ALLOWED_EXTENSIONS.includes(extname)) {
-    return cb(null, true);  // Accept file
+    return cb(null, true);  
   } else {
-    return cb(new Error('Invalid file type'), false);  // Reject file
+    return cb(new Error('Invalid file type'), false);  
   }
 };
 
-// Initialize multer with the above configuration
+
 const upload = multer({
   storage,
   limits: {
