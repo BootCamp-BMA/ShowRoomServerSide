@@ -1,44 +1,42 @@
-// src/middleware/uploadModel.js
-
 const multer = require('multer');
-const path = require('path');
+require('dotenv').config();
 
-// Get the max file size from .env and convert it to bytes (MB -> bytes)
-const MODEL3D_MAX_SIZE_MB = parseInt(process.env.MODEL3D_MAX_SIZE_MB, 10) * 1024 * 1024; // 50 MB
+const MAX_GLBSIZE = process.env.MAX_GLBSIZE * 1024 * 1024;  // Maximum .glb file size (in bytes)
 
-// Define allowed file extension for the 3D model (GLB)
-const ALLOWED_EXTENSIONS = ['.glb'];
+const storage = multer.memoryStorage();
 
-// Create storage configuration for 3D model uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    // You can change this to your desired folder
-    cb(null, 'uploads/models/');  // Save the uploaded files to the "uploads/models" directory
-  },
-  filename: function (req, file, cb) {
-    const extname = path.extname(file.originalname).toLowerCase();
-    const filename = `${Date.now()}_${file.fieldname}${extname}`;  // Create a unique filename
-    cb(null, filename);
-  }
-});
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        const fileExtension = file.originalname.split('.').pop().toLowerCase();
 
-// File filter to accept only .glb extension
-const fileFilter = (req, file, cb) => {
-  const extname = path.extname(file.originalname).toLowerCase();
-  if (ALLOWED_EXTENSIONS.includes(extname)) {
-    return cb(null, true);  // Accept file
-  } else {
-    return cb(new Error('Invalid file type. Only .glb files are allowed'), false);  // Reject file
-  }
+        // Check for .glb file type
+        if (fileExtension !== 'glb') {
+            return cb(new Error(`Unsupported file type. Only .glb files are allowed.`));
+        }
+
+        // Check for file size limit
+        if (file.size > MAX_GLBSIZE) {
+            return cb(new Error(`File ${file.originalname} exceeds the size limit of ${process.env.MAX_GLBSIZE}MB.`));
+        }
+
+        cb(null, true);
+    },
+}).single('model');  // Only accept a single file with the field name 'model'
+
+module.exports.handleUpload = (req, res, next) => {
+    upload(req, res, (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(400).json({ message: 'File upload failed', error: err.message });
+        }
+
+        // Ensure that only one file is uploaded and it's a .glb file
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded.' });
+        }
+
+        // If all checks pass, proceed to the next middleware
+        next();
+    });
 };
-
-// Initialize multer with the above configuration
-const uploadModel = multer({
-  storage,
-  limits: {
-    fileSize: MODEL3D_MAX_SIZE_MB  // Limit the file size to the value from .env
-  },
-  fileFilter
-});
-
-module.exports = uploadModel;
