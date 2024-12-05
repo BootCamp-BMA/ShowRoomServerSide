@@ -44,7 +44,7 @@ router.get('/getById/:id',getCarById);
 /**
  * @swagger
  * /api/cars/getWhere:
- *   post:
+ *   get:
  *     summary: Get cars based on dynamic search parameters
  *     description: Retrieve a list of cars based on search filters, sorting, field selection, and pagination. Only accessible by authenticated users with 'admin' or 'user' roles.
  *     tags:
@@ -96,7 +96,7 @@ router.get('/getById/:id',getCarById);
  *         description: Internal Server Error
  */
 
-router.get('/getWhere', auth(['admin', 'user']), getWhere);
+router.get('/getWhere', getWhere);
 
 /**
  * @swagger
@@ -106,8 +106,6 @@ router.get('/getWhere', auth(['admin', 'user']), getWhere);
  *     description: Add a new car to the inventory. Only accessible by admin users.
  *     tags:
  *       - Car
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
