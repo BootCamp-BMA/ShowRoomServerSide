@@ -54,7 +54,7 @@ module.exports.getWhere=async(req,res,next)=>{
             condition={},
             sort={},
             select='',
-            limit=1,
+            limit=10,
             skip=0
         } =req.body
         const result = await Car.find(condition)

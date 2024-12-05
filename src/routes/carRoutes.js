@@ -40,13 +40,12 @@ const {auth} = require('../middleware/auth.js')
  *         description: Internal Server Error
  */
 router.get('/getById/:id',getCarById);
-
 /**
  * @swagger
  * /api/cars/getWhere:
  *   get:
- *     summary: Get cars based on dynamic search parameters
- *     description: Retrieve a list of cars based on search filters, sorting, field selection, and pagination. Only accessible by authenticated users with 'admin' or 'user' roles.
+ *     summary: Query cars with conditions, sorting, and pagination
+ *     description: Retrieve a list of cars from the inventory based on filter conditions, sorting, field selection, and pagination. Accessible by all users.
  *     tags:
  *       - Car
  *     requestBody:
@@ -58,30 +57,27 @@ router.get('/getById/:id',getCarById);
  *             properties:
  *               condition:
  *                 type: object
- *                 description: Filters to apply to the query (e.g., make, model, year).
- *                 example:
- *                   make: 'Tesla'
- *                   year: { "$gte": 2020 }
+ *                 description: MongoDB-like query object to filter cars.
+ *                 example: { "fuelType": "Electric", "isAvailable": true }
  *               sort:
  *                 type: object
- *                 description: Sorting rules (e.g., sort by price, year).
- *                 example:
- *                   pricePerDay: 1  # 1 means ascending order, -1 means descending order
+ *                 description: MongoDB-like object to sort cars. Use `1` for ascending and `-1` for descending order.
+ *                 example: { "pricePerDay": 1, "year": -1 }
  *               select:
  *                 type: string
- *                 description: Fields to include in the result. Leave empty to include all fields.
- *                 example: 'make model year pricePerDay'
+ *                 description: Comma-separated list of fields to include or exclude in the response.
+ *                 example: "make model pricePerDay"
  *               limit:
  *                 type: integer
- *                 description: The number of cars to return.
+ *                 description: Maximum number of results to return. Default is 1.
  *                 example: 10
  *               skip:
  *                 type: integer
- *                 description: The number of cars to skip (for pagination).
- *                 example: 0
+ *                 description: Number of records to skip for pagination. Default is 0.
+ *                 example: 5
  *     responses:
  *       200:
- *         description: List of cars matching the search criteria
+ *         description: Successfully retrieved the list of cars
  *         content:
  *           application/json:
  *             schema:
@@ -89,12 +85,27 @@ router.get('/getById/:id',getCarById);
  *               items:
  *                 $ref: '#/components/schemas/Car'
  *       400:
- *         description: Invalid search parameters or data
- *       401:
- *         description: Unauthorized - Authentication required
+ *         description: Invalid request format or parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid input data
  *       500:
  *         description: Internal Server Error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal Server Error
  */
+
 
 router.get('/getWhere', getWhere);
 
