@@ -1,5 +1,4 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
 const { MongoClient, GridFSBucket } = require('mongodb');
 
 // Load environment variables
@@ -10,7 +9,10 @@ let dbInstance;
 let gridFSBucket;
 
 // MongoDB client instance
-const client = new MongoClient(mongoURI);
+const client = new MongoClient(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 const connectMongo = async () => {
   if (!dbInstance) {
@@ -24,10 +26,6 @@ const connectMongo = async () => {
 
       // Set up GridFSBucket
       gridFSBucket = new GridFSBucket(dbInstance, { bucketName: 'uploads' });
-
-      // Connect to MongoDB using Mongoose
-      await mongoose.connect(mongoURI, { dbName });
-      console.log('Connected to MongoDB with Mongoose');
     } catch (error) {
       console.error('Error connecting to MongoDB:', error);
       throw error;
@@ -47,5 +45,5 @@ const getGridFSBucket = async () => {
 module.exports = {
   connectMongo,
   getGridFSBucket,
-  MongoClient
+  MongoClient,
 };
