@@ -1,77 +1,75 @@
 const bcrypt = require('bcryptjs');
-const mongoose = require('mongoose');
+const { ObjectId } = require('mongodb'); // For working with MongoDB ObjectId
+const { connectMongo } = require('../config/db'); // Assuming your MongoDB connection logic is in 'mongo.js'
 
-const UserSchema = mongoose.Schema({
-    firstName: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    lastName: {
-        type: String,
-        required: true,
-        trim: true
-    },
-    phoneNum: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    phoneNum2: {
-        type: String,
-        default: null
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true
-    },
-    password: {
-        type: String,
-        required: true
-    },
-    photo: {
-        type: String,
-        default: null,
-        validate: {
-            validator: function(value) {
-                
-                const base64Regex = /^data:image\/[a-zA-Z]+;base64,/;
-                return !value || base64Regex.test(value);
-            },
-            message: 'Invalid image format. Expected base64 string.'
-        }
-    },
-    role: {
-        type: String,
-        enum: ['guest', 'admin', 'user'],
-        default: 'user'
+const COLLECTION_NAME = 'users';
+
+const UserModel = {
+  // Create a new user
+  async create(userData) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+
+    // Hash the password before saving
+    if (userData.password) {
+      userData.password = await bcrypt.hash(userData.password, 10);
     }
-}, {
-    timestamps: true
-});
 
-UserSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 10);
-    next();
-});
+    userData.createdAt = new Date();
+    userData.updatedAt = new Date();
 
-UserSchema.pre('remove', async function(next) {
-    try {
+    const result = await collection.insertOne(userData);
+    return result.ops[0]; // Return the inserted user document
+  },
 
-      await Appointment.deleteMany({ userId: this._id });
-      next();
-    } catch (err) {
-      next(err);
+  // Find a user by ID
+  async findById(userId) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+    return collection.findOne({ _id: new ObjectId(userId) });
+  },
+
+  // Find a user by email
+  async findByEmail(email) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+    return collection.findOne({ email });
+  },
+
+  // Update a user
+  async update(userId, updateData) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
     }
-  });
 
+    updateData.updatedAt = new Date();
 
-UserSchema.methods.comparePassword = async function(inputPassword) {
-    return await bcrypt.compare(inputPassword, this.password);
+    const result = await collection.updateOne(
+      { _id: new ObjectId(userId) },
+      { $set: updateData }
+    );
+    return result.modifiedCount > 0;
+  },
+
+  // Delete a user and related data
+  async delete(userId) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+
+    // Cascade delete appointments or related records (adjust this logic as needed)
+    const Appointment = require('./appointment'); // Replace with the actual appointment model
+    await Appointment.deleteMany({ userId: new ObjectId(userId) });
+
+    return collection.deleteOne({ _id: new ObjectId(userId) });
+  },
+
+  // Compare passwords
+  async comparePassword(inputPassword, storedPassword) {
+    return bcrypt.compare(inputPassword, storedPassword);
+  },
 };
 
-
-module.exports = mongoose.model('User', UserSchema);
+module.exports = UserModel;

@@ -1,102 +1,110 @@
-const mongoose = require('mongoose');
-const { imageMaxSize, model3dMaxSize } = require('../config/config.js');
+const { ObjectId } = require('mongodb'); // For working with MongoDB ObjectId
+const { connectMongo } = require('../config/db.js'); // Assuming your MongoDB connection logic is in 'mongo.js'
+const { imageMaxSize, model3dMaxSize } = require('../config/config.js'); // Config values
+const { removeFileById } = require('../config/gridFS.js'); // Function to delete files from GridFS
+const Appointment = require('../models/AppointementModel.js'); // Appointment model
 
-const carSchema = new mongoose.Schema(
-  {
-    make: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    model: {
-      type: String,
-      required: true,
-      trim: true
-    },
-    year: {
-      type: Number,
-      required: true,
-      min: 1886
-    },
-    pricePerDay: {
-      type: Number,
-      required: true,
-      min: 0
-    },
-    color: {
-      type: String,
-      trim: true,
-      default: ''
-    },
-    mileage: {
-      type: Number,
-      min: 0,
-      default: 0
-    },
-    fuelType: {
-      type: String,
-      enum: ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Other'],
-      default: 'Other'
-    },
-    transmission: {
-      type: String,
-      enum: ['Manual', 'Automatic', 'Semi-Automatic'],
-      required: true
-    },
-    engineSize: {
-      type: Number,
-      min: 0
-    },
-    description: {
-      type: String,
-      trim: true,
-      maxlength: 500
-    },
-    isAvailable: {
-      type: Boolean,
-      default: true
-    },
-    features: {
-      type: [String],
-      default: []
-    },
-    images: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'File',  // Assuming you're storing images in GridFS
-    }],
-    model3D: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'File',  // Store the ID of the 3D model in GridFS
-      default: null
+const COLLECTION_NAME = 'cars';
+
+const CarModel = {
+  // Create a new car
+  async create(carData) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+
+    carData.createdAt = new Date();
+    carData.updatedAt = new Date();
+
+    const result = await collection.insertOne(carData);
+    return result.ops[0];
+  },
+
+  // Find a car by ID
+  async findById(carId) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+    return collection.findOne({ _id: new ObjectId(carId) });
+  },
+
+  // Update a car
+  async update(carId, updateData) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+
+    updateData.updatedAt = new Date();
+
+    const result = await collection.updateOne(
+      { _id: new ObjectId(carId) },
+      { $set: updateData }
+    );
+    return result.modifiedCount > 0;
+  },
+
+  // Delete a car and its related data
+  async delete(carId) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+
+    const car = await this.findById(carId);
+    if (!car) {
+      throw new Error(`Car with ID ${carId} not found`);
+    }
+
+    try {
+      // Remove associated files (images and 3D model)
+      if (car.model3D) {
+        await removeFileById(car.model3D);
+        console.log(`Deleted model3D file with ID: ${car.model3D}`);
+      }
+
+      if (car.images && car.images.length > 0) {
+        for (let imageId of car.images) {
+          await removeFileById(imageId);
+          console.log(`Deleted image file with ID: ${imageId}`);
+        }
+      }
+
+      // Remove associated appointments
+      await Appointment.deleteMany({ carId: new ObjectId(carId) });
+
+      // Delete the car itself
+      return collection.deleteOne({ _id: new ObjectId(carId) });
+    } catch (error) {
+      console.error(`Error deleting car: ${error.message}`);
+      throw error;
     }
   },
-  { timestamps: true }
-);
 
-carSchema.pre('remove', async function(next) {
-  try {
-    // If the car has a model3D, delete the associated file
-    if (this.model3D) {
-      await removeFileById(this.model3D);
-      console.log(`Deleted model3D file with ID: ${this.model3D}`);
+  // Validate and enforce custom constraints
+  validateCarData(carData) {
+    const errors = [];
+
+    // Year validation
+    if (carData.year < 1886) {
+      errors.push('Year must be 1886 or later');
     }
 
-    // If the car has images, delete all the associated image files
-    if (this.images && this.images.length > 0) {
-      for (let imageId of this.images) {
-        await removeFileById(imageId);
-        console.log(`Deleted image file with ID: ${imageId}`);
-      }
+    // Description length
+    if (carData.description && carData.description.length > 500) {
+      errors.push('Description must be 500 characters or less');
     }
 
-    // Clean up associated appointments when a car is removed
-    await Appointment.deleteMany({ carId: this._id });
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
+    // Fuel type and transmission validation
+    const validFuelTypes = ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Other'];
+    if (!validFuelTypes.includes(carData.fuelType)) {
+      errors.push('Invalid fuel type');
+    }
 
-const Car = mongoose.model('Car', carSchema);
+    const validTransmissions = ['Manual', 'Automatic', 'Semi-Automatic'];
+    if (!validTransmissions.includes(carData.transmission)) {
+      errors.push('Invalid transmission type');
+    }
 
-module.exports = Car;
+    // Handle validation errors
+    if (errors.length > 0) {
+      throw new Error(errors.join(', '));
+    }
+  },
+};
+
+module.exports = CarModel;
