@@ -6,6 +6,29 @@ const Appointment = require('../models/AppointementModel.js'); // Appointment mo
 const COLLECTION_NAME = 'cars';
 
 const CarModel = {
+  async getWhere(condition = {}, sort = {}, select = {}, limit = 10, skip = 0) {
+    try {
+      const db = await connectMongo();
+      const collection = db.collection(COLLECTION_NAME);
+
+      // Ensure the condition for ObjectId is handled (in case we are searching by ID)
+      if (condition._id) {
+        condition._id = new ObjectId(condition._id);  // Convert string ID to ObjectId if necessary
+      }
+
+      // Find cars based on provided condition, with sorting, selection, limit, and skip
+      const cars = await collection.find(condition)
+        .sort(sort)                   // Apply sorting
+        .project(select)               // Apply field selection
+        .skip(skip)                    // Skip for pagination
+        .limit(limit)                  // Limit for pagination
+        .toArray();                    // Convert the result to an array
+
+      return cars;  // Return the list of cars
+    } catch (error) {
+      throw new Error(`Error fetching cars: ${error.message}`);
+    }
+  },
   // Create a new car
   async create(carData) {
     try {
