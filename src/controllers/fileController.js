@@ -1,48 +1,98 @@
-//mdoule.exports uploadfile by id  async 
-const {uploadFiles,getFileById}=require('../config/gridFS')
-const Car = require('../models/carModel')
+const { getGridFSBucket, connectMongo } = require('../config/db');  // MongoDB connection config
+const { Readable } = require('stream');
+const { ObjectId } = require('mongodb');
+const { uploadFiles } = require('../config/gridFS');  // Upload function
 
-module.exports.uploadModel=async(req,res,next)=>{
 
-    try {
-      const carId = req.params.id;
+module.exports.getFileById = async (req, res) => {
+  try {
+    const fileId = req.params.id;
 
-      const car = await Car.findById(carId);
+    // Connect to MongoDB
+    const db = await connectMongo();
+    const gridFSBucket = await getGridFSBucket();
 
-      if (!car) {
-        return res.status(404).json({ message: 'Car not found' }); // Return error if car does not exist
-      }
-  
+    // Find the file metadata in GridFS
+    const file = await db.collection('uploads.files').findOne({ _id: new ObjectId(fileId) });
 
-      if (!req.file) {
-          return res.status(400).json({ message: 'No file provided for upload' });
-      }
+    if (!file) {
+      return res.status(404).json({ message: 'File not found' }); 
+    }
 
-      const file = req.file; 
-      const fileStream = file.buffer;  
-      const filename = file.originalname; 
-      const metadata = {};  
+    // Set headers for the file
+    res.set({
+      'Content-Type': 'model/gltf-binary',
+      'Content-Disposition': `attachment; filename="${file.filename}"`,
+    });
 
-      // Call upload function for the single file
-      const fileId = await uploadFiles(fileStream, filename, metadata);
+    // Stream the file content
+    const downloadStream = gridFSBucket.openDownloadStream(new ObjectId(fileId));
+    downloadStream.pipe(res);
 
-      car.model3D=fileId;
-      await car.save();
+    downloadStream.on('error', (err) => {
+      console.error('Error during download:', err);
+      res.status(500).json({ message: 'Error streaming file' });
+    });
 
-      console.log('File uploaded with ID:', fileId);
-      res.status(200).json({ message: 'File uploaded successfully', fileId });
+    downloadStream.on('end', () => {
+      console.log('File streamed successfully');
+    });
   } catch (error) {
-      next(error)
+    console.error('Error retrieving file:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
+
+module.exports.uploadModel = async (req, res, next) => {
+  try {
+    const carId = req.params.id;
+
+    // Connect to MongoDB
+    const db = await connectMongo();
+    const carsCollection = db.collection('cars');  // Cars collection
+
+    const car = await carsCollection.findOne({ _id: new ObjectId(carId) });
+
+    if (!car) {
+      return res.status(404).json({ message: 'Car not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file provided for upload' });
+    }
+
+    const file = req.file;
+    const fileStream = file.buffer;
+    const filename = file.originalname;
+    const metadata = { carId };  // Associate file with car ID
+
+    // Upload file to GridFS
+    const fileId = await uploadFiles(fileStream, filename, metadata);
+
+    // Update car with model3D file ID
+    await carsCollection.updateOne(
+      { _id: new ObjectId(carId) },
+      { $set: { model3D: fileId } }
+    );
+
+    res.status(200).json({ message: '3D model file uploaded successfully', fileId });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports.uploadImages = async (req, res, next) => {
   try {
-    const carId = req.params.id; 
+    const carId = req.params.id;
 
-    const car = await Car.findById(carId);
+    // Connect to MongoDB
+    const db = await connectMongo();
+    const carsCollection = db.collection('cars');  // Cars collection
+
+    const car = await carsCollection.findOne({ _id: new ObjectId(carId) });
+
     if (!car) {
-      return res.status(404).json({ message: 'Car not found' }); // Return error if car does not exist
+      return res.status(404).json({ message: 'Car not found' });
     }
 
     if (!req.files || req.files.length === 0) {
@@ -51,65 +101,28 @@ module.exports.uploadImages = async (req, res, next) => {
 
     const fileIds = [];
 
-    // Iterate over each file and upload it
+    // Upload each image file
     for (let i = 0; i < req.files.length; i++) {
       const file = req.files[i];
       const fileStream = file.buffer;
       const filename = file.originalname;
-      const metadata = {};
+      const metadata = { carId };  // Associate file with car ID
 
-      // Call upload function for each file
       const fileId = await uploadFiles(fileStream, filename, metadata);
       fileIds.push(fileId);
-      console.log(`File ${i + 1} uploaded with ID:`, fileId);
     }
-    car.images.push(...fileIds);
-    await car.save(); 
 
+    // Update car with image file IDs
+    await carsCollection.updateOne(
+      { _id: new ObjectId(carId) },
+      { $push: { images: { $each: fileIds } } }  // Add images to the images array
+    );
 
     res.status(200).json({
-      message: 'Files uploaded successfully',
-      fileIds, // Return the array of file IDs
+      message: 'Images uploaded successfully',
+      fileIds,  // Return array of image file IDs
     });
   } catch (error) {
     next(error);
   }
 };
-
-module.exports.getFileById=async(req,res,next)=>{
-  try {
-    const fileId = req.params.id;
-    console.log('Retrieving file with ID:', fileId);
-
-    const downloadStream = await getFileById(fileId);
-
-    res.setHeader('Content-Type', 'application/octet-stream');
-    res.setHeader('Content-Disposition', 'attachment');
-
-    downloadStream.pipe(res);
-
-    downloadStream.on('error', (err) => {
-        console.error('Error while streaming file:', err);
-        if (err.code === 'ENOENT') {
-            return res.status(404).json({ message: 'File not found' });
-        }
-        res.status(500).json({ message: 'Error retrieving file', error: err.message });
-    });
-
-    downloadStream.on('end', () => {
-        console.log('File retrieved successfully');
-    });
-    
-  } catch (error) {
-    next(error)
-  }
-}
-
-module.exports.deleteFileById=async(req,res,next)=>{
-  try {
-
-    
-  } catch (error) {
-    next(error)
-  }
-}

@@ -1,18 +1,16 @@
-const { ObjectId } = require('mongodb');
-const { connectMongo } = require('../config/db'); // Assuming connection logic is here
-const { deleteFileById } = require('../config/gridFS'); // Function for GridFS file deletion
-
+const CarModel = require('../models/carModel'); // Import the Car Model
+const {connectMongo} = require('../config/db')
 const COLLECTION_NAME = 'cars';
 
 module.exports.getCarById = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const db = await connectMongo();
-    const car = await db.collection(COLLECTION_NAME).findOne({ _id: new ObjectId(id) });
+    const car = await CarModel.findById(id); // Use CarModel's findById method
 
     if (!car) {
       return res.status(404).json({ message: 'Car not found' });
     }
+
     res.status(200).json(car);
   } catch (error) {
     next(error);
@@ -22,15 +20,36 @@ module.exports.getCarById = async (req, res, next) => {
 module.exports.createCar = async (req, res, next) => {
   try {
     const carData = req.body;
-    const db = await connectMongo();
 
+    // Validate required fields
+    if (!carData.make || !carData.model || !carData.year) {
+      return res.status(400).json({ error: "Make, model, and year are required" });
+    }
+
+    // Set default values for optional fields
+    carData.color = carData.color || "";
+    carData.mileage = carData.mileage || 0;
+    carData.fuelType = carData.fuelType || "Other";
+    carData.transmission = carData.transmission || "Manual";
+    carData.isAvailable = carData.isAvailable !== undefined ? carData.isAvailable : true;
+    carData.features = carData.features || [];
+    carData.images = carData.images || [];
+    carData.model3D = carData.model3D || null;
+
+    // Set timestamps for createdAt and updatedAt
     carData.createdAt = new Date();
     carData.updatedAt = new Date();
 
+    // Connect to the database
+    const db = await connectMongo();
+
+    // Insert the car data into the collection
     const result = await db.collection(COLLECTION_NAME).insertOne(carData);
 
-    res.status(201).json(result.ops[0]);
+    // Return the insertedId as the response
+    res.status(201).json({ insertedId: result.insertedId });
   } catch (error) {
+    console.error('Error creating car:', error);  // Log the error for debugging
     next(error);
   }
 };
@@ -39,49 +58,32 @@ module.exports.updateCar = async (req, res, next) => {
   try {
     const { id } = req.params;
     const newCarData = req.body;
-    const db = await connectMongo();
 
-    newCarData.updatedAt = new Date();
+    // Validate the car data
+    if (newCarData.pricePerDay && (typeof newCarData.pricePerDay !== 'number' || newCarData.pricePerDay <= 0)) {
+      return res.status(400).json({ error: "pricePerDay must be a positive number" });
+    }
 
-    const result = await db
-      .collection(COLLECTION_NAME)
-      .findOneAndUpdate(
-        { _id: new ObjectId(id) },
-        { $set: newCarData },
-        { returnDocument: 'after' }
-      );
+    // Use CarModel to update the car
+    const updatedCar = await CarModel.update(id, newCarData);
 
-    if (!result.value) {
+    if (!updatedCar) {
       return res.status(404).json({ message: 'Car not found' });
     }
 
-    res.status(200).json(result.value);
-  } catch (error) { 
+    res.status(200).json(updatedCar);
+  } catch (error) {
     next(error);
   }
 };
 
 module.exports.getWhere = async (req, res, next) => {
   try {
-    const {
-      condition = {},
-      sort = {},
-      select = {},
-      limit = 10,
-      skip = 0,
-    } = req.body;
+    const { condition = {}, sort = {}, select = {}, limit = 10, skip = 0 } = req.body;
 
-    const db = await connectMongo();
-    const result = await db
-      .collection(COLLECTION_NAME)
-      .find(condition)
-      .project(select)
-      .sort(sort)
-      .skip(parseInt(skip))
-      .limit(parseInt(limit))
-      .toArray();
+    const cars = await CarModel.getWhere(condition, sort, select, limit, skip);
 
-    res.json(result);
+    res.status(200).json(cars);
   } catch (error) {
     next(error);
   }
@@ -90,64 +92,29 @@ module.exports.getWhere = async (req, res, next) => {
 module.exports.deleteCars = async (req, res, next) => {
   try {
     const { id, ids = [] } = req.body;
-    const db = await connectMongo();
 
-    // Delete a single car
     if (ids.length === 0 && id) {
-      const car = await db.collection(COLLECTION_NAME).findOne({ _id: new ObjectId(id) });
+      // Delete a single car
+      const deleted = await CarModel.delete(id);
 
-      if (!car) {
+      if (deleted) {
+        return res.status(200).json({ message: 'Car and associated files deleted successfully' });
+      } else {
         return res.status(404).json({ message: 'Car not found' });
       }
+    } else if (ids.length > 0) {
+      // Delete multiple cars
+      const deletedCount = await CarModel.delete(ids);
 
-      // Delete associated files
-      if (car.model3D) {
-        await deleteFileById(car.model3D);
-        console.log(`Deleted model3D file with ID: ${car.model3D}`);
-      }
-
-      if (car.images && car.images.length > 0) {
-        for (const imageId of car.images) {
-          await deleteFileById(imageId);
-          console.log(`Deleted image file with ID: ${imageId}`);
-        }
-      }
-
-      await db.collection(COLLECTION_NAME).deleteOne({ _id: new ObjectId(id) });
-
-      return res.status(200).json({ message: 'Car and associated files deleted successfully' });
-    }
-
-    // Delete multiple cars
-    if (ids.length > 0) {
-      const cars = await db
-        .collection(COLLECTION_NAME)
-        .find({ _id: { $in: ids.map((id) => new ObjectId(id)) } })
-        .toArray();
-
-      if (cars.length === 0) {
+      if (deletedCount > 0) {
+        return res.status(200).json({ message: `${deletedCount} cars and their associated files deleted successfully` });
+      } else {
         return res.status(404).json({ message: 'No cars found' });
       }
-
-      for (const car of cars) {
-        if (car.model3D) {
-          await deleteFileById(car.model3D);
-          console.log(`Deleted model3D file with ID: ${car.model3D}`);
-        }
-
-        if (car.images && car.images.length > 0) {
-          for (const imageId of car.images) {
-            await deleteFileById(imageId);
-            console.log(`Deleted image file with ID: ${imageId}`);
-          }
-        }
-
-        await db.collection(COLLECTION_NAME).deleteOne({ _id: car._id });
-      }
-
-      return res.status(200).json({ message: `${cars.length} cars and their associated files deleted successfully` });
+    } else {
+      return res.status(400).json({ message: 'No IDs provided for deletion' });
     }
-  } catch (error) { 
+  } catch (error) {
     next(error);
   }
 };

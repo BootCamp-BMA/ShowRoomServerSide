@@ -12,7 +12,7 @@ router.use('/users',userRoutes)
 router.use('/auth',authRoutes)
 router.use('/cars',carRoutes)
 router.use('/appointement',appointementRoutes)
-router.use('/file',fileRoot)
+router.use('/file',fileRoot) 
 
 
 

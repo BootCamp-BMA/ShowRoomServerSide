@@ -1,6 +1,5 @@
 const { ObjectId } = require('mongodb'); // For working with MongoDB ObjectId
 const { connectMongo } = require('../config/db.js'); // Assuming your MongoDB connection logic is in 'mongo.js'
-const { imageMaxSize, model3dMaxSize } = require('../config/config.js'); // Config values
 const { removeFileById } = require('../config/gridFS.js'); // Function to delete files from GridFS
 const Appointment = require('../models/AppointementModel.js'); // Appointment model
 
@@ -9,48 +8,67 @@ const COLLECTION_NAME = 'cars';
 const CarModel = {
   // Create a new car
   async create(carData) {
-    const db = await connectMongo();
-    const collection = db.collection(COLLECTION_NAME);
+    try {
+      const db = await connectMongo();
+      const collection = db.collection(COLLECTION_NAME);
 
-    carData.createdAt = new Date();
-    carData.updatedAt = new Date();
+      carData.createdAt = new Date();
+      carData.updatedAt = new Date();
 
-    const result = await collection.insertOne(carData);
-    return result.ops[0];
+      const result = await collection.insertOne(carData);
+      return result.ops[0]; // Return the created car
+    } catch (error) {
+      throw new Error(`Error creating car: ${error.message}`);
+    }
   },
 
   // Find a car by ID
   async findById(carId) {
-    const db = await connectMongo();
-    const collection = db.collection(COLLECTION_NAME);
-    return collection.findOne({ _id: new ObjectId(carId) });
+    try {
+      const db = await connectMongo();
+      const collection = db.collection(COLLECTION_NAME);
+      const car = await collection.findOne({ _id: new ObjectId(carId) });
+      if (!car) {
+        throw new Error(`Car with ID ${carId} not found`);
+      }
+      return car;
+    } catch (error) {
+      throw new Error(`Error finding car: ${error.message}`);
+    }
   },
 
   // Update a car
   async update(carId, updateData) {
-    const db = await connectMongo();
-    const collection = db.collection(COLLECTION_NAME);
+    try {
+      const db = await connectMongo();
+      const collection = db.collection(COLLECTION_NAME);
 
-    updateData.updatedAt = new Date();
+      updateData.updatedAt = new Date();
 
-    const result = await collection.updateOne(
-      { _id: new ObjectId(carId) },
-      { $set: updateData }
-    );
-    return result.modifiedCount > 0;
+      const result = await collection.updateOne(
+        { _id: new ObjectId(carId) },
+        { $set: updateData }
+      );
+      if (result.modifiedCount > 0) {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      throw new Error(`Error updating car: ${error.message}`);
+    }
   },
 
   // Delete a car and its related data
   async delete(carId) {
-    const db = await connectMongo();
-    const collection = db.collection(COLLECTION_NAME);
-
-    const car = await this.findById(carId);
-    if (!car) {
-      throw new Error(`Car with ID ${carId} not found`);
-    }
-
     try {
+      const db = await connectMongo();
+      const collection = db.collection(COLLECTION_NAME);
+
+      const car = await this.findById(carId);
+      if (!car) {
+        throw new Error(`Car with ID ${carId} not found`);
+      }
+
       // Remove associated files (images and 3D model)
       if (car.model3D) {
         await removeFileById(car.model3D);
@@ -68,10 +86,13 @@ const CarModel = {
       await Appointment.deleteMany({ carId: new ObjectId(carId) });
 
       // Delete the car itself
-      return collection.deleteOne({ _id: new ObjectId(carId) });
+      const result = await collection.deleteOne({ _id: new ObjectId(carId) });
+      if (result.deletedCount > 0) {
+        return true;
+      }
+      return false;
     } catch (error) {
-      console.error(`Error deleting car: ${error.message}`);
-      throw error;
+      throw new Error(`Error deleting car: ${error.message}`);
     }
   },
 

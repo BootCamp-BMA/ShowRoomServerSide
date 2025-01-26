@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const imageUpload=require('../middleware/uploadImages')
 const modelUpload=require('../middleware/uploadModel')
-const {uploadModel,getFileById,uploadImages} = require('../controllers/fileController')
+const {uploadModel,uploadImages,getFileById} = require('../controllers/fileController')
 const { auth } = require('../middleware/auth')
 
 router.post('/uploadModelToCar/:id',auth(['admin']),modelUpload,uploadModel)
