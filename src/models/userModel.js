@@ -9,24 +9,25 @@ const UserModel = {
   async create(userData) {
     const db = await connectMongo();
     const collection = db.collection(COLLECTION_NAME);
-
+  
     // Hash the password before saving
     if (userData.password) {
       userData.password = await bcrypt.hash(userData.password, 10);
     }
-
+  
     userData.createdAt = new Date();
     userData.updatedAt = new Date();
-
+  
     const result = await collection.insertOne(userData);
-    return result.ops[0]; // Return the inserted user document
-  },
+    return result; // Return the inserted user document
+  }
+  ,
 
   // Find a user by ID
   async findById(userId) {
     const db = await connectMongo();
     const collection = db.collection(COLLECTION_NAME);
-    return collection.findOne({ _id: new ObjectId(userId) });
+    return collection.findOne({ _id: new ObjectId(userId) }); 
   },
 
   // Find a user by email
@@ -59,17 +60,14 @@ const UserModel = {
     const db = await connectMongo();
     const collection = db.collection(COLLECTION_NAME);
 
-    // Cascade delete appointments or related records (adjust this logic as needed)
-    const Appointment = require('./appointment'); // Replace with the actual appointment model
-    await Appointment.deleteMany({ userId: new ObjectId(userId) });
+    // Convert userId to ObjectId
+    const userObjectId = new ObjectId(userId);
 
-    return collection.deleteOne({ _id: new ObjectId(userId) });
-  },
 
-  // Compare passwords
-  async comparePassword(inputPassword, storedPassword) {
-    return bcrypt.compare(inputPassword, storedPassword);
-  },
+
+    return collection.deleteOne({ _id: userObjectId });
+}
+
 };
 
 module.exports = UserModel;

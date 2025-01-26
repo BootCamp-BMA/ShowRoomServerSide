@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {auth}= require('../middleware/auth')
-const {getAppointmentById, getAppointementWhere, updateAppointment, createAppointment, deleteAppointment}=require('../controllers/appointementController')
+const {getAppointmentById, getAppointmentsWhere, updateAppointment, createAppointment, deleteAppointment}=require('../controllers/appointementController')
 
 /**
  * @swagger
@@ -100,7 +100,7 @@ router.get('/getById/:id',auth(['admin','user']),getAppointmentById)
  */
 
 
-router.get('/getWhere',auth(['admin','user']),getAppointementWhere)
+router.get('/getWhere',auth(['admin','user']),getAppointmentsWhere)
 
 /**
  * @swagger

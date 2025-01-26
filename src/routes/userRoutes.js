@@ -107,7 +107,7 @@ router.get('/getUsersWhere',auth(['admin']),userController.getUsersWhere);
  *         description: Internal Server Error
  */
 
-router.put('/updateUser',auth(['user','admin']),userController.updateProfile)
+router.put('/updateUser/:userId',auth(['user','admin']),userController.updateProfile)
 
 /**
  * @swagger
@@ -144,7 +144,7 @@ router.put('/updateUser',auth(['user','admin']),userController.updateProfile)
  *       500:
  *         description: Internal Server Error
  */
-router.delete('/delete',auth(['admin']),userController.deleteUsers)
+router.delete('/delete/:userId',auth(['admin']),userController.deleteUsers)
 
 
 

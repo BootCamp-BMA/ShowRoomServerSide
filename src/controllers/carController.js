@@ -79,9 +79,21 @@ module.exports.updateCar = async (req, res, next) => {
 
 module.exports.getWhere = async (req, res, next) => {
   try {
-    const { condition = {}, sort = {}, select = {}, limit = 10, skip = 0 } = req.body;
 
-    const cars = await CarModel.getWhere(condition, sort, select, limit, skip);
+
+  const {
+      condition = {},
+      sort = {},
+      select = {},
+      limit = 6, // Default value for limit
+      skip = 0,   // Default value for skip
+    } = req.body;
+
+    // Use user-provided limit and skip values, falling back to defaults if they are not set
+    const userLimit = limit || 6;   // Default to 10 if no limit provided
+    const userSkip = skip || 0;   
+
+    const cars = await CarModel.getWhere(condition, sort, select, userLimit, userSkip);
 
     res.status(200).json(cars);
   } catch (error) {
