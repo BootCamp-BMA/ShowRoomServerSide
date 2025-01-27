@@ -47,7 +47,7 @@ module.exports.createCar = async (req, res, next) => {
     const result = await db.collection(COLLECTION_NAME).insertOne(carData);
 
     // Return the insertedId as the response
-    res.status(201).json({ insertedId: result.insertedId });
+    res.status(201).json({ _id: result.insertedId });
   } catch (error) {
     console.error('Error creating car:', error);  // Log the error for debugging
     next(error);
