@@ -113,7 +113,7 @@ module.exports.deleteAppointment = async (req, res, next) => {
     }
 
     const deletedCount = await AppointmentModel.deleteMany(ids);
-    if (deletedCount === 0) {
+    if (deletedCount === 0) { 
       return res.status(404).json({ message: 'Appointments not found' });
     }
 

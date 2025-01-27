@@ -4,26 +4,37 @@ const { connectMongo } = require('../config/db'); // Assuming MongoDB connection
 const COLLECTION_NAME = 'appointments';
 
 const validateAppointmentDateTime = (value) => {
-    return value >= Date.now();
+  const appointmentTimestamp = new Date(value).getTime();
+  return !isNaN(appointmentTimestamp) && appointmentTimestamp > Date.now();
 };
 
 const AppointmentModel = {
+  async findWhere(condition = {}, sort = {}, limit = 10, skip = 0) {
+    const db = await connectMongo();
+    const collection = db.collection(COLLECTION_NAME);
+
+    // Fetch data based on condition, sort, limit, and skip
+    const appointments = await collection
+      .find(condition)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    return appointments;
+  },
   // Create a new appointment
   async create(appointmentData) {
     const db = await connectMongo();
     const collection = db.collection(COLLECTION_NAME);
 
-    // Validate and hash the date
-    if (!validateAppointmentDateTime(appointmentData.appointmentDateTime)) {
-      throw new Error('Appointment date and time must be in the future.');
-    }
 
     appointmentData.createdAt = new Date();
     appointmentData.updatedAt = new Date();
 
     const result = await collection.insertOne(appointmentData);
-    return result.ops[0]; // Return the inserted appointment document
-  },
+    return result; // Return the inserted appointment document
+},
 
   // Find an appointment by ID
   async findById(appointmentId) {
