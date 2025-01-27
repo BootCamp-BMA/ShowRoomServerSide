@@ -174,7 +174,7 @@ router.post('/create',auth(['admin','user']),createAppointment)
 
 
 
-router.put('/update/id',auth(['admin','user']),updateAppointment)
+router.put('/update/:id',auth(['admin','user']),updateAppointment)
 
 /**
  * @swagger
