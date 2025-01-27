@@ -67,7 +67,10 @@ const UserModel = {
 
     return collection.deleteOne({ _id: userObjectId });
 }
-
+,
+  async comparePassword(plainPassword,hashedPassword){
+    return bcrypt.compare(plainPassword,hashedPassword)
+  }
 };
 
 module.exports = UserModel;
