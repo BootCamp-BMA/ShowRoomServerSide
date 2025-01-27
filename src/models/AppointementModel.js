@@ -8,6 +8,8 @@ const validateAppointmentDateTime = (value) => {
   return !isNaN(appointmentTimestamp) && appointmentTimestamp > Date.now();
 };
 
+const STATUS_ENUM = ['pending', 'canceled', 'completed', 'confirmed'];
+
 const AppointmentModel = {
   async findWhere(condition = {}, sort = {}, limit = 10, skip = 0) {
     const db = await connectMongo();
