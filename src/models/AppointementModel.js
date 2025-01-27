@@ -28,13 +28,21 @@ const AppointmentModel = {
     const db = await connectMongo();
     const collection = db.collection(COLLECTION_NAME);
 
+    // Default value for 'status' is 'pending' if not provided
+    appointmentData.status = appointmentData.status || 'pending';
+
+    // Validate the status field against the enum
+    if (!STATUS_ENUM.includes(appointmentData.status)) {
+      throw new Error(`Invalid status value. Allowed values are: ${STATUS_ENUM.join(', ')}`);
+    }
+
 
     appointmentData.createdAt = new Date();
     appointmentData.updatedAt = new Date();
 
     const result = await collection.insertOne(appointmentData);
     return result; // Return the inserted appointment document
-},
+  },
 
   // Find an appointment by ID
   async findById(appointmentId) {
@@ -47,6 +55,11 @@ const AppointmentModel = {
   async update(appointmentId, updateData) {
     const db = await connectMongo();
     const collection = db.collection(COLLECTION_NAME);
+
+    // If status is provided, validate it against the enum
+    if (updateData.status && !STATUS_ENUM.includes(updateData.status)) {
+      throw new Error(`Invalid status value. Allowed values are: ${STATUS_ENUM.join(', ')}`);
+    }
 
     // Update the updatedAt field
     updateData.updatedAt = new Date();
