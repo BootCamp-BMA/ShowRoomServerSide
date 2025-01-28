@@ -85,7 +85,7 @@ module.exports.getWhere = async (req, res, next) => {
       condition = {},
       sort = {},
       select = {},
-      limit = 6, // Default value for limit
+      limit = 1000, // Default value for limit
       skip = 0,   // Default value for skip
     } = req.body;
 
