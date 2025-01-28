@@ -105,7 +105,7 @@ module.exports.deleteCars = async (req, res, next) => {
   try {
     const { id, ids = [] } = req.body;
 
-    if (ids.length === 0 && id) {
+    if (ids.length === 0 && id) { 
       // Delete a single car
       const deleted = await CarModel.delete(id);
 

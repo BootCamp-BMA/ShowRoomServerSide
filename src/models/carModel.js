@@ -88,23 +88,23 @@ const CarModel = {
       const collection = db.collection(COLLECTION_NAME);
   
       // Ensure carId is valid
-      const car = await this.findById(carId);
+      const car = await this.findById(carId);  
       if (!car) {
         throw new Error(`Car with ID ${carId} not found`);
       }
   
-      // Remove associated files (images and 3D model)
-      if (car.model3D) {
-        await removeFileById(car.model3D);
-        console.log(`Deleted model3D file with ID: ${car.model3D}`);
-      }
+      // // Remove associated files (images and 3D model)
+      // if (car.model3D) {
+      //   await removeFileById(car.model3D);
+      //   console.log(`Deleted model3D file with ID: ${car.model3D}`);
+      // }
   
-      if (car.images && car.images.length > 0) {
-        for (let imageId of car.images) {
-          await removeFileById(imageId);
-          console.log(`Deleted image file with ID: ${imageId}`);
-        }
-      }
+      // if (car.images && car.images.length > 0) {
+      //   for (let imageId of car.images) {
+      //     await removeFileById(imageId);
+      //     console.log(`Deleted image file with ID: ${imageId}`);
+      //   }
+      // }
   
       // Delete the car itself
       const result = await collection.deleteOne({ _id: new ObjectId(carId) });
